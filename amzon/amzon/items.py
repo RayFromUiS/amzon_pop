@@ -18,6 +18,9 @@ class AmzonItem(scrapy.Item):
     price = scrapy.Field()
     category = scrapy.Field()
     features = scrapy.Field()
-    reviews = scrapy.Field()
+    crawl_time = scrapy.Field()
+
+
+    # reviews = scrapy.Field()
 
 

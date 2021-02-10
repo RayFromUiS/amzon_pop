@@ -16,10 +16,10 @@ SPIDER_MODULES = ['amzon.spiders']
 NEWSPIDER_MODULE = 'amzon.spiders'
 
 
-DOWNLOAD_DELAY = 3
+# DOWNLOAD_DELAY = 3
 RANDOMIZE_DOWNLOAD_DELAY = True
-SELENIUM_DRIVER_NAME = 'chrome'
-SELENIUM_DRIVER_EXECUTABLE_PATH = which('chromedriver')
+SELENIUM_DRIVER_NAME = 'firefox'
+SELENIUM_DRIVER_EXECUTABLE_PATH = which('geckodriver')
 SELENIUM_DRIVER_ARGUMENTS = ['--headless']  # '--headless' if using chrome instead of firefox
 RETRY_TIMES = 10
 # Retry on most error codes since proxies fail for different reasons

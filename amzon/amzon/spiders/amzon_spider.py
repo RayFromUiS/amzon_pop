@@ -1,6 +1,8 @@
 import scrapy
 from amzon.items import AmzonItem
+from datetime import datetime
 from scrapy_selenium import SeleniumRequest
+from scrapy.selector import Selector
 from selenium.webdriver.common.by import By
 from selenium.webdriver import PhantomJS
 from selenium.webdriver.support import expected_conditions as EC
@@ -34,10 +36,10 @@ class AmzonPopularSpider(scrapy.Spider):
 
     def start_requests(self):
         for url in self.start_urls:
-            yield SeleniumRequest(url=url,
+            yield scrapy.Request(url=url,
                                   callback=self.parse_more,
-                                  wait_time=30,
-                                  wait_until=EC.presence_of_element_located((By.ID, 'zg_browseRoot'))
+                                  # wait_time=30,
+                                  # wait_until=EC.presence_of_element_located((By.ID, 'zg_browseRoot'))
                                   )
 
     def parse_more(self,response):
@@ -51,10 +53,10 @@ class AmzonPopularSpider(scrapy.Spider):
             category_url = best_categorie.css('a').attrib.get('href')
 
         # print(more_button)
-            yield SeleniumRequest(url=category_url,
+            yield scrapy.Request(url=category_url,
                               callback=self.parse_more_pro,
-                            wait_time= 20,
-                             wait_until= EC.presence_of_element_located((By.ID, 'zg-ordered-list')),
+                            # wait_time= 30,
+                             # wait_until= EC.presence_of_element_located((By.ID, 'zg-ordered-list')),
                               cb_kwargs={'category':category})
 
     def parse_more_pro(self,response,category):
@@ -73,8 +75,9 @@ class AmzonPopularSpider(scrapy.Spider):
             view_times = item.css('span.aok-inline-block').css('div.a-icon-row a.a-size-small::text').get() ##string of numbers
             price = item.css('span.aok-inline-block').css('div.a-row span.a-color-price').get() ## price span tag
 
-            yield SeleniumRequest(url=response.urljoin(item_url),
+            yield scrapy.Request(url=response.urljoin(item_url),
                                   callback=self.parse_item,
+                                  # wait_until= EC.presence_of_element_located((By.ID,'feature-bullets')),
                                   cb_kwargs={
                                       'category':category,
                                       'rank':rank,
@@ -86,13 +89,14 @@ class AmzonPopularSpider(scrapy.Spider):
                                   })
 
 
-        next_page =response.css('ul.a-pagination li.a-last>a').attrib.get('href')
-        if next_page:
-            yield SeleniumRequest(url=next_page,
-                                  callback=self.parse_more_pro,
-                                  wait_time= 20,
-                                  wait_until=EC.presence_of_element_located((By.ID, 'zg-ordered-list')),
-                                  cb_kwargs={'category':category})
+        #only crawl the first page items,which is 50 items
+        # next_page =response.css('ul.a-pagination li.a-last>a').attrib.get('href')
+        # if next_page:
+        #     yield SeleniumRequest(url=next_page,
+        #                           callback=self.parse_more_pro,
+        #                           wait_time= 30,
+        #                           wait_until=EC.presence_of_element_located((By.ID, 'zg-ordered-list')),
+        #                           cb_kwargs={'category':category})
 
     def parse_item(self,response,rank,preview_img_link,title,star,view_times,price,category):
         # from scrapy.shell import inspect_response
@@ -111,38 +115,49 @@ class AmzonPopularSpider(scrapy.Spider):
         item['view_times'] = view_times
         item['price'] = price
         item['category'] = category
+        item['crawl_time'] = datetime.now()
 
-        element = driver.find_element_by_id('acrCustomerReviewLink')
-        driver.execute_script("arguments[0].click();", element)
-        yield SeleniumRequest(url=driver.current_url,
-                              callback=self.parse_reviews,
-                              wait_time= 20,
-                              wait_until= EC.presence_of_element_located((By.ID, 'reviewsMedley')),
-                              cb_kwargs={'item':item})
-
-    def parse_reviews(self,response,item):
-
-        from scrapy.shell import inspect_response
-        inspect_response(response, self)
-        if item.get('item_views'):
-            item_reviews=item.get('item_views')
-        else:
-            item_reviews = []
-        # item_reviews = []
-        reviews = response.css('div#cm-cr-dp-review-list>div.review-text-content')
-        for review in reviews:
-            item_reviews.append(review.css('span::text').get())
-
-        next_page = response.css('ul.a-pagination').css('li.a-last a').attrib.get('href')
-        if next_page:
-            yield SeleniumRequest(response.urljoin(next_page),
-                                  callback=self.parse_reviews,
-                                  wait_time=20,
-                                  wait_until= EC.presence_of_element_located((By.ID, 'cm-cr-dp-review-list')),
-                                  cb_kwargs={'item':item})
-        item['reviews'] = item_reviews
         yield item
 
+        # element = driver.find_element_by_id('acrCustomerReviewLink')
+        # driver.execute_script("arguments[0].click();", element)
+        # yield SeleniumRequest(url=driver.current_url,
+        #                       callback=self.parse_reviews,
+        #                       # wait_time= 30,
+        #                       # wait_until= EC.presence_of_element_located((By.ID, 'reviewsMedley')),
+        #                       cb_kwargs={'item':item})
+
+    # def parse_reviews(self,response,item):
+    #
+    #     # from scrapy.shell import inspect_response
+    #     # inspect_response(response, self)
+    #     if item.get('item_views'):
+    #         item_reviews=item.get('item_views')
+    #     else:
+    #         item_reviews = []
+    #     # item_reviews = []
+    #     reviews = response.css('div#cm-cr-dp-review-list').css('div.review-text-content')
+    #
+    #     for review in reviews:
+    #         item_reviews.append(review.css('span::text').get())
+    #     ## click laoding all the views
+    #     driver = response.request.meta.get('driver')
+    #     load_all_reviews=driver.find_element_by_id('cr-pagination-footer-0')
+    #     load_all_review_link = load_all_reviews.find_element_by_tag_name('a')
+    #     driver.execute_script("arguments[0].click();", load_all_review_link)
+    #
+    #     # all_pages = res.css('div#cr-pagination-footer-0').css('a.a-link-emphasis').attrib.get('href')
+    #     res = Selector(text=driver.page_source)
+    #     next_page = res.css('ul.a-pagination').css('li.a-last a').attrib.get('href')
+    #     if next_page:
+    #         yield SeleniumRequest(response.urljoin(next_page),
+    #                               callback=self.parse_reviews,
+    #                               # wait_time=30,
+    #                               # wait_until= EC.presence_of_element_located((By.ID, 'cm-cr-dp-review-list')),
+    #                               cb_kwargs={'item':item})
+    #     item['reviews'] = item_reviews
+    #     yield item
+    #
 
 
 
