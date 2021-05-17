@@ -43,7 +43,7 @@ DOWNLOADER_MIDDLEWARES = {
     # 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
 }
 
-MONGO_URI= 'mongodb://root:password@localhost:27017/'
+MONGO_URI= 'mongodb://root:password@localhost:27018/'
 MONGO_DATABASE='amazon_shoppings'
 
 ITEM_PIPELINES = {

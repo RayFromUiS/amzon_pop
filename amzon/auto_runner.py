@@ -17,7 +17,7 @@ def run_scraper():
     configure_logging()
     runner = CrawlerRunner(settings=crawler_settings)
     task = LoopingCall(lambda: runner.crawl(AmzonPopularSpider))
-    task.start(60 * 10)
+    task.start(60 * 120)
     reactor.run()
     # process = CrawlerProcess(settings=crawler_settings)
     # process.crawl(AmzonPopularSpider)
