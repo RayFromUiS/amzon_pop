@@ -22,7 +22,7 @@ def run_scraper():
     process = CrawlerProcess(settings=crawler_settings)
     process.crawl(AmzonTelsaSpider)
     # process = CrawlerProcess(settings=crawler_settings)
-    # process.crawl(AmzonPopularSpider)
+    # process.cnPopularSpider)
     #
     # process.start()
 

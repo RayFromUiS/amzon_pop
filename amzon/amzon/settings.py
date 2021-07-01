@@ -47,7 +47,8 @@ MONGO_URI= 'mongodb://root:xuan2020@139.198.172.10:27017/'
 MONGO_DATABASE='amazon_shoppings'
 
 ITEM_PIPELINES = {
-    'amzon.pipelines.AmzonPipeline': 300,
+    # 'amzon.pipelines.AmzonPipeline': 300,
+    'amzon.pipelines.AmazonTelsaPipeline': 301
 }
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'amzon (+http://www.yourdomain.com)'
