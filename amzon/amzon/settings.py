@@ -16,15 +16,15 @@ SPIDER_MODULES = ['amzon.spiders']
 NEWSPIDER_MODULE = 'amzon.spiders'
 
 
-# DOWNLOAD_DELAY = 3
-RANDOMIZE_DOWNLOAD_DELAY = True
+DOWNLOAD_DELAY = 3
+# RANDOMIZE_DOWNLOAD_DELAY = True
 SELENIUM_DRIVER_NAME = 'firefox'
 SELENIUM_DRIVER_EXECUTABLE_PATH = which('geckodriver')
 SELENIUM_DRIVER_ARGUMENTS = ['-headless']  # '--headless' if using chrome instead of firefox
 RETRY_TIMES = 10
 # Retry on most error codes since proxies fail for different reasons
 RETRY_HTTP_CODES = [500, 503, 504, 400, 403, 404, 408]
-PROXY_LIST = 'amzon/spiders/proxies'
+PROXY_LIST = 'amzon/spiders/proxies_round3'
 PROXY_MODE = 0  # different proxy for each request
 RANDOM_UA_PER_PROXY = True
 FAKEUSERAGENT_FALLBACK = 'Mozillapip install scrapy_proxies'
@@ -37,10 +37,15 @@ DOWNLOADER_MIDDLEWARES = {
     # 'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': None,
     'scrapy_proxies.RandomProxy': 700,
     'scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware': 710,
-    'scrapy_selenium.SeleniumMiddleware': 730,
+    'scrapy_selenium.SeleniumMiddleware': 690,
     # 'scrapy_splash.SplashCookiesMiddleware': 650,
     # 'scrapy_splash.SplashMiddleware': 652,
     # 'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
+    'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
+    'scrapy_cookies.downloadermiddlewares.cookies.CookiesMiddleware': 711,
+    # 'scrapy_splash.SplashCookiesMiddleware': 650,
+    # 'scrapy_splash.SplashMiddleware': 652,
+    'scrapy.downloadermiddlewares.httpcompression.HttpCompressionMiddleware': 810,
 }
 
 MONGO_URI= 'mongodb://root:xuan2020@139.198.172.10:27017/'
@@ -50,6 +55,22 @@ ITEM_PIPELINES = {
     # 'amzon.pipelines.AmzonPipeline': 300,
     'amzon.pipelines.AmazonTelsaPipeline': 301
 }
+
+COOKIES_ENABLED = True
+COOKIES_PERSISTENCE = True
+COOKIES_PERSISTENCE_DIR = 'cookies'
+COOKIES_STORAGE = 'scrapy_cookies.storage.in_memory.InMemoryStorage'
+DOWNLOADER_MIDDLEWARES.update({
+    'scrapy.downloadermiddlewares.cookies.CookiesMiddleware': None,
+    'scrapy_cookies.downloadermiddlewares.cookies.CookiesMiddleware': 711,
+})
+
+SCHEDULER_PERSIST = True
+DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+# Specify the host and port to use when connecting to Redis (optional).
+REDIS_HOST = '139.198.172。10'
+# REDIS_HOST='localhost'
+REDIS_PORT = 6379
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'amzon (+http://www.yourdomain.com)'
 
