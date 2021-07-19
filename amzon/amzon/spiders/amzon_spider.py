@@ -128,7 +128,7 @@ from scrapy_redis.spiders import  RedisSpider
 #
 class AmzonTelsaSpider(scrapy.Spider):
     name = 'tesla_amazon'
-    allowed_domains = ['amazon.com']
+    # allowed_domains = ['amazon.com']
     # start_urls = ['https://www.amazon.com/Best-Sellers/zgbs/ref=zg_bs_unv_0_amazon-devices_1']
     start_urls = [
         'https://www.amazon.com/s?k=tesla+accessories&crid=90RZC7XATMXS&sprefix=tesla+accessories%2Caps%2C438&ref=nb_sb_ss_ts-doa-p_1_17']
@@ -184,37 +184,6 @@ class AmzonTelsaSpider(scrapy.Spider):
                                              'review_counts': review_counts,
                                              'review_url': review_url,
                                              'item_price': item_price})
-        # print(current_page)
-
-        # if current_page<7:
-        #     current_page +=1
-        #     suf_url = response.css('li.a-normal a').attrib.get('href')
-        #     pre =  suf_url.split(f'page={current_page}')[0]
-        #     first_split = f'page={current_page}'
-        #     second_split = f'sr_pg_{current_page}'
-        #     suf = suf_url.split(f'page={current_page}')[-1].split('sr_pg_')[0]
-        #
-        #     com_url = pre+first_split+suf+second_split
-        #
-        #     # print(sur_url+str(current_page))
-        #     # com_url = respo
-        #     yield response.follow(url=com_url,
-        #                           callback= self.parse_more,
-        #                           cb_kwargs={'current_page':current_page})
-        # ##翻页
-        # # if driver.find_element_by_css_selector('li.a-last a'):
-        #     driver.find_element_by_css_selector('li.a-last a').click()
-        #     res = HtmlResponse(url=driver.current_url,
-        #                        body=driver.page_source.encode(),
-        #                        encoding='utf8')
-        #     return self.parse_more(res)
-
-
-            # yield SeleniumRequest(url=driver.current_url,
-            #                       callback=self.parse_more,
-            #                       wait_time=30,
-            #                       wait_until=EC.presence_of_element_located((By.CSS_SELECTOR, 'ul.a-pagination'))
-            #                       )
 
     def parse_item(self, response, item_star, preview_img_url, item_name, review_counts, item_price, review_url):
         '''抓取商品的详细信息'''
@@ -233,104 +202,3 @@ class AmzonTelsaSpider(scrapy.Spider):
 
         yield item
 
-
-
-class AmzonTelsaRedisSpider(RedisSpider):
-    name = 'tesla_amazon_redis'
-    # allowed_domains = ['amazon.com']
-    redis_key = "tesla:start_urls"
-    # start_urls = ['https://www.amazon.com/Best-Sellers/zgbs/ref=zg_bs_unv_0_amazon-devices_1']
-    # start_urls = [
-    #     'https://www.amazon.com/s?k=tesla+accessories&crid=90RZC7XATMXS&sprefix=tesla+accessories%2Caps%2C438&ref=nb_sb_ss_ts-doa-p_1_17']
-    # collection_name = 'amzon_popular'
-    custom_settings = {
-        'ITEM_PIPELINES': {'amzon.pipelines.AmazonTelsaPipeline': 301}
-    }
-
-    def __init__(self):
-        self.mongo_uri = get_project_settings().get('MONGO_URI')
-        self.mongo_db = get_project_settings().get('MONGO_DATABASE')
-        self.collection = 'telsa'
-        self.client = pymongo.MongoClient(self.mongo_uri)
-        self.db = self.client[self.mongo_db]
-
-    def make_requests_from_url(self, url):
-        yield SeleniumRequest(url=url,
-                              callback=self.parse_more,
-                              wait_time=30,
-                              wait_until=EC.presence_of_element_located((By.CSS_SELECTOR, 'ul.a-pagination')),
-                              cb_kwargs={'current_page':1}
-                              )
-    def parse_more(self, response,current_page):
-        from scrapy.shell import inspect_response
-        inspect_response(response,self)
-        '''抓取商品链接及在本页能够获取的其他信息，并传递至下个函数内'''
-
-        driver = response.request.meta.get('driver')
-        items = response.css('div.a-section.a-spacing-medium')
-        for item in items:
-            preview_img_url = item.css('img.s-image').attrib.get('src')
-            item_name = item.css('h2.a-size-mini span::text').get()
-            item_url = item.css('h2.a-size-mini a').attrib.get('href')
-            item_star = item.css('i.a-star-small-4-5 span::text').get()
-            review_counts = item.css('span.a-size-base::text').get()
-            review_url = item.css('a.a-link-normal').attrib.get('href')
-            item_price = item.css('span.a-price-whole::text').get()
-            # print(more_button)
-
-            yield response.follow(url=item_url,
-                                  callback=self.parse_item,
-                                  cb_kwargs={'preview_img_url': preview_img_url,
-                                             'item_name': item_name,
-                                             'item_star': item_star,
-                                             'review_counts': review_counts,
-                                             'review_url': review_url,
-                                             'item_price': item_price})
-        # print(current_page)
-
-        # if current_page<7:
-        #     current_page +=1
-        #     suf_url = response.css('li.a-normal a').attrib.get('href')
-        #     pre =  suf_url.split(f'page={current_page}')[0]
-        #     first_split = f'page={current_page}'
-        #     second_split = f'sr_pg_{current_page}'
-        #     suf = suf_url.split(f'page={current_page}')[-1].split('sr_pg_')[0]
-        #
-        #     com_url = pre+first_split+suf+second_split
-        #
-        #     # print(sur_url+str(current_page))
-        #     # com_url = respo
-        #     yield response.follow(url=com_url,
-        #                           callback= self.parse_more,
-        #                           cb_kwargs={'current_page':current_page})
-        ##翻页
-        # if driver.find_element_by_css_selector('li.a-last a'):
-        #     driver.find_element_by_css_selector('li.a-last a').click()
-        #     res = HtmlResponse(url=driver.current_url,
-        #                        body=driver.page_source.encode(),
-        #                        encoding='utf8')
-        #     return self.parse_more(res)
-
-
-        # yield SeleniumRequest(url=driver.current_url,
-        #                       callback=self.parse_more,
-        #                       wait_time=30,
-        #                       wait_until=EC.presence_of_element_located((By.CSS_SELECTOR, 'ul.a-pagination'))
-        #                       )
-
-    def parse_item(self, response, item_star, preview_img_url, item_name, review_counts, item_price, review_url):
-        '''抓取商品的详细信息'''
-        item = AmzonItem()
-        item['item_url'] = response.url
-        item['item_name'] = item_name
-        item['features'] = response.css('div#feature-bullets').css('li span::text').getall()
-        item['item_star'] = item_star
-        item['preview_img_link'] = preview_img_url
-        # item['star'] = sta
-        item['review_counts'] = review_counts
-        item['item_price'] = item_price
-        # item['category'] = category
-        item['review_url'] = response.urljoin(review_url)
-        item['crawl_time'] = datetime.now()
-
-        yield item
