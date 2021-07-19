@@ -65,12 +65,12 @@ DOWNLOADER_MIDDLEWARES.update({
     'scrapy_cookies.downloadermiddlewares.cookies.CookiesMiddleware': 711,
 })
 
-SCHEDULER_PERSIST = True
-DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
-# Specify the host and port to use when connecting to Redis (optional).
-REDIS_HOST = '139.198.172.10'
-# REDIS_HOST='localhost'
-REDIS_PORT = 6379
+# SCHEDULER_PERSIST = True
+# # DUPEFILTER_CLASS = "scrapy_redis.dupefilter.RFPDupeFilter"
+# # Specify the host and port to use when connecting to Redis (optional).
+# REDIS_HOST = '139.198.172.10'
+# # REDIS_HOST='localhost'
+# REDIS_PORT = 6379
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'amzon (+http://www.yourdomain.com)'
 
