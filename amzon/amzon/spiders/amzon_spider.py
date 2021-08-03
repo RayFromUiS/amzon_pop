@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 import pymongo
 from scrapy.utils.project import get_project_settings
+import re
 from scrapy.http import HtmlResponse
 from scrapy_redis.spiders import  RedisSpider
 
@@ -171,7 +172,7 @@ class AmzonTelsaSpider(scrapy.Spider):
             item_name = item.css('h2.a-size-mini span::text').get()
             item_url = item.css('h2.a-size-mini a').attrib.get('href')
             item_star = item.css('i.a-star-small-4-5 span::text').get()
-            review_counts = item.css('span.a-size-base::text').get()
+            # review_counts = item.css('span.a-size-base::text').get()
             review_url = item.css('a.a-link-normal').attrib.get('href')
             item_price = item.css('span.a-price-whole::text').get()
             # print(more_button)
@@ -181,11 +182,11 @@ class AmzonTelsaSpider(scrapy.Spider):
                                   cb_kwargs={'preview_img_url': preview_img_url,
                                              'item_name': item_name,
                                              'item_star': item_star,
-                                             'review_counts': review_counts,
+                                             # 'review_counts': review_counts,
                                              'review_url': review_url,
                                              'item_price': item_price})
 
-    def parse_item(self, response, item_star, preview_img_url, item_name, review_counts, item_price, review_url):
+    def parse_item(self, response, item_star, preview_img_url, item_name,  item_price, review_url):
         '''抓取商品的详细信息'''
         item = AmzonItem()
         item['item_url'] = response.url
@@ -194,7 +195,9 @@ class AmzonTelsaSpider(scrapy.Spider):
         item['item_star'] = item_star
         item['preview_img_link'] = preview_img_url
         # item['star'] = sta
-        item['review_counts'] = review_counts
+        reviews = response.css('span#acrCustomerReviewText::text').get()
+        reviews = re.sub('[a-z]','',reviews).strip()
+        item['review_counts'] = int(reviews)
         item['item_price'] = item_price
         # item['category'] = category
         item['review_url'] = response.urljoin(review_url)
