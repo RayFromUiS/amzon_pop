@@ -155,7 +155,7 @@ class AmzonTelsaSpider(scrapy.Spider):
             yield SeleniumRequest(url=url,
                                   callback=self.parse_more,
                                   wait_time=30,
-                                  wait_until=EC.presence_of_element_located((By.CSS_SELECTOR, 'ul.a-pagination')),
+                                  # wait_until=EC.presence_of_element_located((By.CSS_SELECTOR, 'ul.a-pagination')),
                                   cb_kwargs={'current_page':1}
 
                                   )
@@ -196,8 +196,11 @@ class AmzonTelsaSpider(scrapy.Spider):
         item['preview_img_link'] = preview_img_url
         # item['star'] = sta
         reviews = response.css('span#acrCustomerReviewText::text').get()
-        reviews = re.sub('[a-z]','',reviews).strip()
-        item['review_counts'] = int(reviews)
+        reviews = re.sub('[a-z,]','',reviews).strip()
+        if reviews:
+            item['review_counts'] = int(reviews)
+        else:
+            item['review_counts'] = reviews
         item['item_price'] = item_price
         # item['category'] = category
         item['review_url'] = response.urljoin(review_url)
