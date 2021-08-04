@@ -189,8 +189,8 @@ class AmzonTelsaSpider(scrapy.Spider):
     def parse_item(self, response, item_star, preview_img_url, item_name,  item_price, review_url):
         '''抓取商品的详细信息'''
         item = AmzonItem()
-        from scrapy.shell import inspect_response
-        inspect_response(response,self)
+        # from scrapy.shell import inspect_response
+        # inspect_response(response,self)
         item['item_url'] = response.url
         item['item_name'] = item_name
         item['features'] = response.css('div#feature-bullets').css('li span::text').getall()
