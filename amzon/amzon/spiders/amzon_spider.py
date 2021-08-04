@@ -154,13 +154,13 @@ class AmzonTelsaSpider(scrapy.Spider):
         for url in self.start_urls:
             yield SeleniumRequest(url=url,
                                   callback=self.parse_more,
-                                  wait_time=30,
+                                  # wait_time=30,
                                   # wait_until=EC.presence_of_element_located((By.CSS_SELECTOR, 'ul.a-pagination')),
-                                  cb_kwargs={'current_page':1}
+                                  # cb_kwargs={'current_page':1}
 
                                   )
 
-    def parse_more(self, response,current_page):
+    def parse_more(self, response):
         # from scrapy.shell import inspect_response
         # inspect_response(response,self)
         '''抓取商品链接及在本页能够获取的其他信息，并传递至下个函数内'''
@@ -177,7 +177,7 @@ class AmzonTelsaSpider(scrapy.Spider):
             item_price = item.css('span.a-price-whole::text').get()
             # print(more_button)
 
-            yield response.follow(url=item_url,
+            yield SeleniumRequest(url=response.urljoin(item_url),
                                   callback=self.parse_item,
                                   cb_kwargs={'preview_img_url': preview_img_url,
                                              'item_name': item_name,
@@ -189,6 +189,8 @@ class AmzonTelsaSpider(scrapy.Spider):
     def parse_item(self, response, item_star, preview_img_url, item_name,  item_price, review_url):
         '''抓取商品的详细信息'''
         item = AmzonItem()
+        from scrapy.shell import inspect_response
+        inspect_response(response,self)
         item['item_url'] = response.url
         item['item_name'] = item_name
         item['features'] = response.css('div#feature-bullets').css('li span::text').getall()
@@ -196,8 +198,8 @@ class AmzonTelsaSpider(scrapy.Spider):
         item['preview_img_link'] = preview_img_url
         # item['star'] = sta
         reviews = response.css('span#acrCustomerReviewText::text').get()
-        reviews = re.sub('[a-z,]','',reviews).strip()
         if reviews and isinstance(reviews,str):
+            reviews = re.sub('[a-z,]','',reviews).strip()
             item['review_counts'] = int(reviews)
         else:
             item['review_counts'] = reviews
