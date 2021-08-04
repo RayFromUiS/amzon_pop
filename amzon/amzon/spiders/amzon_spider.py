@@ -197,7 +197,7 @@ class AmzonTelsaSpider(scrapy.Spider):
         # item['star'] = sta
         reviews = response.css('span#acrCustomerReviewText::text').get()
         reviews = re.sub('[a-z,]','',reviews).strip()
-        if reviews:
+        if reviews and isinstance(reviews,str):
             item['review_counts'] = int(reviews)
         else:
             item['review_counts'] = reviews
